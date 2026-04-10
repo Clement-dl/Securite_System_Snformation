@@ -1,4 +1,4 @@
-# Mini-Projet 3 – Réponses & Guide Pratique
+# Mini-Projet 3 
 **Cours : Sécurité des Systèmes d'Information – ECE 2025-2026**
 
 ---
@@ -7,8 +7,8 @@
 
 | Machine | Rôle | IP (exemple) |
 |---------|------|--------------|
-| Kali Linux (clem) | Attaquant + Analyseur | 192.168.1.50 |
-| Metasploitable 2 | Victime | 192.168.1.101 |
+| Kali Linux | Attaquant | 192.168.1.50 |
+| Metasploitable | Victime | 192.168.1.101 |
 
 > La VM Metasploitable est indispensable pour les parties 3A, 3C et 3D.
 > Elle se télécharge sur : https://sourceforge.net/projects/metasploitable/files/Metasploitable2/
@@ -29,12 +29,12 @@ sudo apt install dsniff net-tools -y
 
 **2. Vérifier la connectivité et noter les IPs**
 ```bash
-ip addr                        # noter l'interface (ex: eth0) et l'IP de Kali
-ping 192.168.1.101             # vérifier que Metasploitable répond
-route -n                       # noter l'IP de la passerelle (ex: 192.168.1.1)
+ip addr                        
+ping 192.168.100.2            
+route -n                       
 ```
 
-**3. Vérifier le cache ARP AVANT l'attaque (sur Kali)**
+**3. Vérifier le cache ARP AVANT l'attaque sur Kali**
 ```bash
 arp -a
 # Noter l'adresse MAC associée à l'IP de la passerelle — c'est la MAC légitime
@@ -42,31 +42,21 @@ arp -a
 
 **4. Lancer l'attaque ARP spoofing**
 
-Ouvrir **deux terminaux** sur Kali :
-
-Terminal 1 — se faire passer pour la passerelle auprès de Metasploitable :
+Se faire passer pour la passerelle auprès de Metasploitable :
 ```bash
 sudo arpspoof -i eth0 -t 192.168.1.101 192.168.1.1
 ```
 
-Terminal 2 — se faire passer pour Metasploitable auprès de la passerelle :
-```bash
-sudo arpspoof -i eth0 -t 192.168.1.1 192.168.1.101
-```
-
-> 📸 *[Insérer ici : screenshot des deux terminaux arpspoof en cours d'exécution]*
+![Texte alternatif](images/arp.png)
 
 **5. Vérification depuis Metasploitable**
 
-Se connecter à Metasploitable (dans un terminal ou via la console VM) :
+Se connecter à Metasploitable :
 ```bash
 arp -a
-# L'IP de la passerelle doit maintenant avoir la MAC de Kali → cache empoisonné
 ```
 
-> 📸 *[Insérer ici : screenshot de `arp -a` sur Metasploitable montrant la MAC de Kali associée à l'IP passerelle]*
-
-**Pourquoi ?** ARP n'a aucun mécanisme d'authentification : n'importe qui peut envoyer une réponse ARP non sollicitée. Kali se place en **Man-in-the-Middle** entre Metasploitable et la passerelle, interceptant tout le trafic qui passe entre eux.
+ARP n'a aucun mécanisme d'authentification : n'importe qui peut envoyer une réponse ARP non sollicitée. Kali se place en **Man-in-the-Middle** entre Metasploitable et la passerelle, interceptant tout le trafic qui passe entre eux.
 
 ---
 
@@ -80,15 +70,13 @@ Wireshark tourne directement sur Kali pendant que l'attaque ARP est active.
 ```bash
 sudo wireshark
 ```
-Sélectionner l'interface réseau connectée au réseau (ex: `eth0`), cliquer sur l'icône de capture.
+On sélectionne eth0
 
 **2. Relancer l'attaque ARP en parallèle**
 
-Dans deux terminaux séparés, relancer les commandes arpspoof de la partie 3A pendant que Wireshark capture.
+On relance les arp spoof
 
 **3. Filtres Wireshark utiles**
-
-Taper dans la barre de filtre puis appuyer sur Entrée :
 
 | Filtre | Description |
 |--------|-------------|
@@ -100,23 +88,18 @@ Taper dans la barre de filtre puis appuyer sur Entrée :
 
 **4. Analyser une trame ARP spoofée**
 
-Sélectionner une trame ARP reply dans la liste. Dans le panneau du bas, identifier :
+On Sélectionne une trame ARP reply dans la liste. Dans le panneau du bas, on a :
 - **Sender MAC** : adresse MAC de Kali (l'attaquant)
 - **Sender IP** : adresse IP de la passerelle (`192.168.1.1`)
 - → Metasploitable reçoit "la passerelle a la MAC de Kali" → cache empoisonné
 
-> 📸 *[Insérer ici : screenshot Wireshark avec filtre `arp.opcode == 2` et détails d'une trame spoofée visible dans le panneau inférieur]*
+![Texte alternatif](images/arp2.png)
 
-**5. Arrêter la capture et sauvegarder (optionnel)**
-```bash
-# Dans Wireshark : File → Save As → capture_arp.pcap
-```
-
-**Pourquoi ?** Wireshark capture au niveau de la couche 2 (liaison). On voit clairement les réponses ARP frauduleuses : une même IP (passerelle) associée à une MAC différente de la légitime — c'est la preuve de l'empoisonnement.
+Wireshark capture au niveau de la couche 2 (liaison). On voit clairement les réponses ARP frauduleuses : une même IP (passerelle) associée à une MAC différente de la légitime — c'est la preuve de l'empoisonnement.
 
 ---
 
-## Partie 3C – Exploitation XSS & Injection SQL (DVWA sur Metasploitable)
+## Partie 3C – Exploitation XSS & Injection SQL DVWA sur Metasploitable
 
 ### Réponse
 
@@ -131,33 +114,28 @@ http://192.168.1.101/dvwa/
 
 Aller dans **DVWA Security** → mettre le niveau à **Low** → cliquer Submit.
 
-> 📸 *[Insérer ici : screenshot de la page d'accueil DVWA avec le niveau "Low" configuré]*
+![Texte alternatif](images/dvwa.png)
 
-**2. Exploitation XSS (Cross-Site Scripting)**
+**2. Exploitation XSS Cross-Site Scripting**
 
-Dans le menu gauche, cliquer sur **XSS (Reflected)**.
+Dans le menu gauche sur dvwa, cliquer sur **XSS (Reflected)**.
 
 Dans le champ "What's your name?", entrer :
 
-Payload basique — afficher une alerte :
+Payload basique, afficher une alerte :
 ```html
 <script>alert("XSS");</script>
 ```
 
 Cliquer sur **Submit** → une alerte JavaScript apparaît dans le navigateur.
 
-> 📸 *[Insérer ici : screenshot de l'alerte JavaScript "XSS" dans Firefox]*
+![Texte alternatif](images/dvwa.png)
 
-Payload bonus — redirection :
-```html
-<script>window.location='http://www.google.com';</script>
-```
-
-**Pourquoi ça marche ?** L'application réinjecte directement le contenu du champ dans la page HTML sans filtrer. Le navigateur interprète le `<script>` comme du code légitime. En conditions réelles, cela permet de voler des cookies de session ou rediriger vers un site malveillant.
+L'application réinjecte directement le contenu du champ dans la page HTML sans filtrer. Le navigateur interprète le `<script>` comme du code légitime. En conditions réelles, cela permet de voler des cookies de session ou rediriger vers un site malveillant.
 
 **3. Exploitation Injection SQL**
 
-Dans le menu gauche, cliquer sur **SQL Injection**.
+Dans le menu gauche toujours sur dvwa, on clique sur **SQL Injection**.
 
 Dans le champ "User ID", entrer :
 
@@ -167,22 +145,21 @@ Payload basique — afficher tous les utilisateurs :
 ```
 Cliquer sur **Submit** → toutes les entrées de la base de données s'affichent.
 
-> 📸 *[Insérer ici : screenshot du DVWA affichant tous les utilisateurs suite à l'injection]*
+![Texte alternatif](images/sql.png)
 
-Payload avancé — afficher le nom des tables :
+Autre Payload, afficher le nom des tables :
 ```sql
 1' union select table_name,2 from information_schema.tables where table_schema = database()#
 ```
+![Texte alternatif](images/sql2.png)
 
-**Pourquoi ça marche ?** La requête SQL interne ressemble à `SELECT * FROM users WHERE id='$input'`. En injectant `1' or '1'='1`, la condition devient toujours vraie et retourne toutes les lignes. L'entrée utilisateur n'est jamais validée ni échappée.
+La requête SQL interne ressemble à `SELECT * FROM users WHERE id='$input'`. En injectant `1' or '1'='1`, la condition devient toujours vraie et retourne toutes les lignes. L'entrée utilisateur n'est jamais validée ni échappée.
 
 ---
 
 ## Partie 3D – Test avec Burp Suite
 
 ### Réponse
-
-Tout se fait sur Kali, avec Firefox configuré pour passer par Burp Suite.
 
 **1. Lancer Burp Suite**
 ```bash
@@ -198,7 +175,7 @@ Firefox → Settings → chercher "proxy" → **Manual proxy configuration** :
 - Cocher **"Use this proxy server for all protocols"**
 - Cliquer OK
 
-> 📸 *[Insérer ici : screenshot de la configuration proxy Firefox]*
+![Texte alternatif](images/proxy.png)
 
 **3. Installer le certificat Burp dans Firefox**
 
@@ -208,11 +185,11 @@ Firefox → Settings → chercher "certificates" → **View Certificates** → o
 
 **4. Intercepter une requête**
 
-Dans Burp Suite : onglet **Proxy** → s'assurer que **"Intercept is on"** est activé (bouton bleu).
+Dans Burp Suite il faut aller dans l'onglet **Proxy** → s'assurer que **"Intercept is on"** est activé.
 
 Naviguer sur `http://192.168.1.101/dvwa/` dans Firefox → les requêtes apparaissent dans Burp.
 
-> 📸 *[Insérer ici : screenshot d'une requête HTTP interceptée dans l'onglet Proxy de Burp Suite]*
+![Texte alternatif](images/burp.png)
 
 **5. Tester l'injection SQL via le Repeater**
 
@@ -220,13 +197,13 @@ Sur la page SQL Injection du DVWA, entrer `1` et cliquer Submit.
 
 Dans Burp → clic droit sur la requête interceptée → **Send to Repeater**.
 
-Dans l'onglet **Repeater**, localiser le paramètre `id` dans la requête et le modifier :
+Dans l'onglet **Repeater**, localiser le paramètre `id` dans la requête et le modifier par:
 ```
 id=1'+or+'1'%3D'1
 ```
-Cliquer **Send** → la réponse à droite affiche tous les utilisateurs.
+ensuite on clique sur **Send** → la réponse à droite affiche tous les utilisateurs.
 
-> 📸 *[Insérer ici : screenshot du Repeater avec la requête modifiée et la réponse du serveur]*
+![Texte alternatif](images/repeater.png)
 
 **6. Tester XSS via le Repeater**
 
@@ -241,25 +218,7 @@ Cliquer **Send** → la réponse HTML contient le script injecté.
 **7. Désactiver le proxy après les tests**
 
 Firefox → Settings → proxy → **Use system proxy settings**
-(sinon tu perds l'accès internet)
 
-**Pourquoi ?** Burp Suite agit comme un proxy intermédiaire entre Firefox et le serveur. Il permet d'intercepter, modifier et rejouer chaque requête HTTP — technique fondamentale du pentest web pour manipuler des paramètres normalement cachés.
+Burp Suite agit comme un proxy intermédiaire entre Firefox et le serveur. Il permet d'intercepter, modifier et rejouer chaque requête HTTP — technique fondamentale du pentest web pour manipuler des paramètres normalement cachés.
 
 ---
-
-## Récapitulatif des commandes essentielles
-
-| Partie | Commande / Action | Rôle |
-|--------|-------------------|------|
-| 3A | `sudo apt install dsniff -y` | Installer arpspoof |
-| 3A | `sudo arpspoof -i eth0 -t 192.168.1.101 192.168.1.1` | Empoisonner le cache ARP de Metasploitable |
-| 3A | `sudo arpspoof -i eth0 -t 192.168.1.1 192.168.1.101` | Empoisonner le cache ARP de la passerelle |
-| 3A | `arp -a` (sur Metasploitable) | Vérifier le cache ARP empoisonné |
-| 3B | `sudo wireshark` | Lancer Wireshark sur Kali |
-| 3B | Filtre : `arp` | Isoler les trames ARP |
-| 3B | Filtre : `arp.opcode == 2` | Afficher uniquement les réponses ARP |
-| 3C | `<script>alert("XSS");</script>` | Payload XSS basique |
-| 3C | `1' or '1'='1` | Payload injection SQL |
-| 3D | `burpsuite` | Lancer Burp Suite |
-| 3D | Proxy Firefox : `127.0.0.1:8080` | Rediriger le trafic vers Burp |
-| 3D | Clic droit → Send to Repeater | Modifier et rejouer une requête |
