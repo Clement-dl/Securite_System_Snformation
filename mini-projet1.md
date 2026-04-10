@@ -5,15 +5,12 @@
 
 ## Partie 1A – Mise en place de l'environnement (Kali Linux)
 
-### Réponse
-
 L'environnement de travail est mis en place via **VirtualBox** avec une VM Kali Linux.
 
 **Étapes clés :**
 1. Téléchargement de VirtualBox sur [virtualbox.org](https://www.virtualbox.org/)
 2. Téléchargement de l'ISO Kali Linux (64-bit VMware & VirtualBox) sur [kali.org/downloads](https://www.kali.org/downloads/)
 3. Création de la VM : 4 Go RAM minimum, 30 Go disque, réseau en **Réseau interne**
-4. Installation avec le compte `etudiant` et un mot de passe fort
 
 ![Texte alternatif](images/vm.png)
 
@@ -22,8 +19,6 @@ Le réseau interne isole la VM d'internet, ce qui est essentiel pour les labs de
 ---
 
 ## Partie 1B – Politique de mot de passe
-
-### Réponse
 
 Configuration du module `pam_pwquality` pour imposer des règles de complexité.
 
@@ -84,8 +79,6 @@ Un mot de passe complexe résiste aux attaques par force brute et dictionnaire. 
 
 ## Partie 1C – Authentification SSH par clé
 
-### Réponse
-
 Remplacement de l'authentification par mot de passe par une authentification par clé publique.
 
 **1. Génération de la paire de clés**
@@ -100,12 +93,12 @@ ssh-keygen
 **3. Test de connexion par clé**
 ```bash
 ssh Clement@<IP_UBUNTU>
-# La passphrase est demandée (pas le mot de passe)
+# La passphrase est demandée
 ```
 
 ![Texte alternatif](images/ssh.png)
 
-**4. Désactivation de l'authentification par mot de passe (sur Ubuntu)**
+**4. Désactivation de l'authentification par mot de passe**
 ```bash
 sudo nano /etc/ssh/sshd_config
 PasswordAuthentication no
@@ -124,8 +117,6 @@ Une clé RSA 4096 bits est mathématiquement infaisable à brute-forcer. La pass
 ---
 
 ## Partie 1D – Wireshark & Nmap
-
-### Réponse
 
 **Wireshark – Capture de trafic ICMP**
 
@@ -152,8 +143,6 @@ Wireshark permet d'inspecter en détail les échanges réseau (utile pour détec
 ---
 
 ## Partie 1E – Firewall basique avec iptables
-
-### Réponse
 
 **1. Voir l'état actuel**
 ```bash
