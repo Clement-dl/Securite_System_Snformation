@@ -1,11 +1,9 @@
 # Mini-Projet 2 
-**Cours : Sécurité des Systèmes d'Information – ECE 2025-2026**
+**Cours : Sécurité des Systèmes d'Information ECE 2025-2026**
 
 ---
 
 ## Partie 2A – Permissions Linux
-
-### Réponse
 
 **1. Création des utilisateurs et groupes**
 ```bash
@@ -73,8 +71,6 @@ Le principe du **moindre privilège** consiste à n'accorder que les droits stri
 
 ## Partie 2B – Chiffrement avec OpenSSL
 
-### Réponse
-
 **1. Création du fichier à chiffrer**
 ```bash
 echo "Ceci est un texte confidentiel." > secret.txt
@@ -117,8 +113,6 @@ AES-256-CBC est un chiffrement symétrique : la même clé sert à chiffrer et d
 
 ## Partie 2C – Certificats auto-signés
 
-### Réponse
-
 **1. Génération de la clé privée**
 ```bash
 openssl genrsa -out cle_privee.pem 2048
@@ -136,7 +130,7 @@ Répondre aux questions :
 
 ![Texte alternatif](images/csr.png)
 
-**3. Génération du certificat auto-signé (valide 365 jours)**
+**3. Génération du certificat auto-signé valide 365 jours**
 ```bash
 openssl x509 -req -in requete.csr -signkey cle_privee.pem -out certificat.crt -days 365
 ```
@@ -165,8 +159,6 @@ Un certificat auto-signé n'est pas signé par une autorité de certification (C
 ---
 
 ## Partie 2D – VPN avec OpenVPN
-
-### Réponse
 
 **1. Installation (sur le serveur Ubuntu)**
 ```bash
