@@ -17,7 +17,7 @@ L'environnement de travail est mis en place via **VirtualBox** avec une VM Kali 
 
 > 📸 *[Insérer ici : screenshot VirtualBox avec la VM démarrée et connectée]*
 
-**Pourquoi ?** Le réseau interne isole la VM d'internet, ce qui est essentiel pour les labs de sécurité afin d'éviter tout impact sur le réseau réel.
+Le réseau interne isole la VM d'internet, ce qui est essentiel pour les labs de sécurité afin d'éviter tout impact sur le réseau réel.
 
 ---
 
@@ -36,7 +36,7 @@ sudo apt update && sudo apt install libpam-pwquality -y
 ```bash
 sudo nano /etc/security/pwquality.conf
 ```
-Contenu à ajouter :
+Contenu que j'ai modifié :
 ```
 minlen = 12
 minclass = 4
@@ -49,7 +49,7 @@ difok = 5
 gecoscheck = 1
 ```
 
-> 📸 *[Insérer ici : screenshot du fichier pwquality.conf modifié]*
+(images/pwqconfig.png)
 
 **3. Activation via PAM dans `/etc/pam.d/common-password`**
 ```bash
