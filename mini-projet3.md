@@ -18,11 +18,9 @@
 
 ## Partie 3A – ARP Spoofing
 
-### Réponse
-
 L'attaque ARP spoofing nécessite au moins deux machines sur le même réseau. On utilise Kali comme attaquant et Metasploitable comme victime.
 
-**1. Installation des outils sur Kali**
+**1. Installation des outils sur la Kali**
 ```bash
 sudo apt install dsniff net-tools -y
 ```
@@ -37,12 +35,11 @@ route -n
 **3. Vérifier le cache ARP AVANT l'attaque sur Kali**
 ```bash
 arp -a
-# Noter l'adresse MAC associée à l'IP de la passerelle — c'est la MAC légitime
 ```
 
 **4. Lancer l'attaque ARP spoofing**
 
-Se faire passer pour la passerelle auprès de Metasploitable :
+On se fait passer pour la passerelle auprès de Metasploitable :
 ```bash
 sudo arpspoof -i eth0 -t 192.168.1.101 192.168.1.1
 ```
@@ -61,8 +58,6 @@ ARP n'a aucun mécanisme d'authentification : n'importe qui peut envoyer une ré
 ---
 
 ## Partie 3B – Capture et analyse avec Wireshark
-
-### Réponse
 
 Wireshark tourne directement sur Kali pendant que l'attaque ARP est active.
 
@@ -95,24 +90,22 @@ On Sélectionne une trame ARP reply dans la liste. Dans le panneau du bas, on a 
 
 ![Texte alternatif](images/arp2.png)
 
-Wireshark capture au niveau de la couche 2 (liaison). On voit clairement les réponses ARP frauduleuses : une même IP (passerelle) associée à une MAC différente de la légitime — c'est la preuve de l'empoisonnement.
+Wireshark capture au niveau de la couche 2 (liaison). On voit clairement les réponses ARP frauduleuses, une même IP (passerelle) associée à une MAC différente de la légitime on alors une preuve de l'empoisonnement.
 
 ---
 
 ## Partie 3C – Exploitation XSS & Injection SQL DVWA sur Metasploitable
 
-### Réponse
-
 **1. Accéder au DVWA depuis Kali**
 
-Ouvrir Firefox sur Kali et aller à :
+Il faut ouvrir Firefox sur Kali et aller à :
 ```
 http://192.168.1.101/dvwa/
 ```
 - Login : `admin`
 - Mot de passe : `password`
 
-Aller dans **DVWA Security** → mettre le niveau à **Low** → cliquer Submit.
+Aller dans **DVWA Security** ensuite mettre le niveau à **Low** et cliquer sur Submit.
 
 ![Texte alternatif](images/dvwa.png)
 
@@ -127,7 +120,7 @@ Payload basique, afficher une alerte :
 <script>alert("XSS");</script>
 ```
 
-Cliquer sur **Submit** → une alerte JavaScript apparaît dans le navigateur.
+Cliquer sur **Submit** une alerte JavaScript apparaît dans le navigateur.
 
 ![Texte alternatif](images/dvwa.png)
 
@@ -143,7 +136,7 @@ Payload basique — afficher tous les utilisateurs :
 ```sql
 1' or '1'='1
 ```
-Cliquer sur **Submit** → toutes les entrées de la base de données s'affichent.
+Cliquer sur **Submit** et toutes les entrées de la base de données s'affichent.
 
 ![Texte alternatif](images/sql.png)
 
@@ -159,13 +152,11 @@ La requête SQL interne ressemble à `SELECT * FROM users WHERE id='$input'`. En
 
 ## Partie 3D – Test avec Burp Suite
 
-### Réponse
-
 **1. Lancer Burp Suite**
 ```bash
 burpsuite
 ```
-Choisir **Temporary project** → Next → **Start Burp**.
+Il faut choisir **Temporary project** puis Next et on appuie sur **Start Burp**.
 
 **2. Configurer le proxy dans Firefox**
 
@@ -185,9 +176,9 @@ Firefox → Settings → chercher "certificates" → **View Certificates** → o
 
 **4. Intercepter une requête**
 
-Dans Burp Suite il faut aller dans l'onglet **Proxy** → s'assurer que **"Intercept is on"** est activé.
+Dans Burp Suite il faut aller dans l'onglet **Proxy** puis s'assurer que **"Intercept is on"** est activé.
 
-Naviguer sur `http://192.168.1.101/dvwa/` dans Firefox → les requêtes apparaissent dans Burp.
+Naviguer sur `http://192.168.1.101/dvwa/` dans Firefox et les requêtes apparaissent dans Burp.
 
 ![Texte alternatif](images/burp.png)
 
@@ -195,13 +186,13 @@ Naviguer sur `http://192.168.1.101/dvwa/` dans Firefox → les requêtes apparai
 
 Sur la page SQL Injection du DVWA, entrer `1` et cliquer Submit.
 
-Dans Burp → clic droit sur la requête interceptée → **Send to Repeater**.
+Dans Burp on fait clic droit sur la requête interceptée puis **Send to Repeater**.
 
 Dans l'onglet **Repeater**, localiser le paramètre `id` dans la requête et le modifier par:
 ```
 id=1'+or+'1'%3D'1
 ```
-ensuite on clique sur **Send** → la réponse à droite affiche tous les utilisateurs.
+ensuite on clique sur **Send** et on a la réponse à droite affiche tous les utilisateurs.
 
 ![Texte alternatif](images/repeater.png)
 
@@ -219,6 +210,6 @@ Cliquer **Send** → la réponse HTML contient le script injecté.
 
 Firefox → Settings → proxy → **Use system proxy settings**
 
-Burp Suite agit comme un proxy intermédiaire entre Firefox et le serveur. Il permet d'intercepter, modifier et rejouer chaque requête HTTP — technique fondamentale du pentest web pour manipuler des paramètres normalement cachés.
+Burp Suite agit comme un proxy intermédiaire entre Firefox et le serveur. Il permet d'intercepter, modifier et rejouer chaque requête HTTP, technique fondamentale du pentest web pour manipuler des paramètres normalement cachés.
 
 ---
