@@ -1,4 +1,4 @@
-# Mini-Projet 1 – Réponses & Guide Pratique
+# Mini-Projet 1
 **Cours : Sécurité des Systèmes d'Information – ECE 2025-2026**
 
 ---
