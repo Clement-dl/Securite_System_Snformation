@@ -1,5 +1,5 @@
 # Mini-Projet 4
-**Cours : Sécurité des Systèmes d'Information – ECE 2025-2026**
+**Cours : Sécurité des Systèmes d'Information  ECE 2025-2026**
 
 ---
 
