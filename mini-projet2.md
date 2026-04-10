@@ -211,7 +211,7 @@ cd /etc/openvpn/easy-rsa
 sudo ./easyrsa build-client-full client1 nopass
 ```
 
-Créer le fichier `client.ovpn` (à copier sur le poste client) :
+Créer le fichier `client.ovpn` :
 ```
 client
 dev tun
@@ -246,7 +246,7 @@ sudo systemctl start openvpn@server
 sudo systemctl status openvpn@server
 ```
 
-> 📸 *[Insérer ici : screenshot de `systemctl status openvpn@server` avec le statut "active (running)"]*
+![Texte alternatif](images/server.png)
 
 **6. Connexion depuis le client**
 ```bash
@@ -264,9 +264,6 @@ ping 10.8.0.1
 # Voir les logs côté serveur
 sudo tail -f /var/log/syslog
 ```
-
-> 📸 *[Insérer ici : screenshot de `ip a show tun0` avec l'interface VPN active et son adresse IP]*
-
 OpenVPN crée un tunnel chiffré entre le client et le serveur. Tout le trafic transite par ce tunnel, ce qui le protège des écoutes. Le système de certificats (PKI) garantit l'identité des deux parties et évite les attaques de type man-in-the-middle.
 
 ---
