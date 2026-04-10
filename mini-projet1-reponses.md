@@ -49,7 +49,7 @@ difok = 5
 gecoscheck = 1
 ```
 
-(images/pwqconfig.png)
+![Texte alternatif](images/pwqconfig.png)
 
 **3. Activation via PAM dans `/etc/pam.d/common-password`**
 ```bash
