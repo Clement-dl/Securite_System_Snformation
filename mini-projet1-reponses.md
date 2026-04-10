@@ -15,7 +15,7 @@ L'environnement de travail est mis en place via **VirtualBox** avec une VM Kali 
 3. Création de la VM : 4 Go RAM minimum, 30 Go disque, réseau en **Réseau interne**
 4. Installation avec le compte `etudiant` et un mot de passe fort
 
-> 📸 *[Insérer ici : screenshot VirtualBox avec la VM démarrée et connectée]*
+![Texte alternatif](images/vm.png)
 
 Le réseau interne isole la VM d'internet, ce qui est essentiel pour les labs de sécurité afin d'éviter tout impact sur le réseau réel.
 
