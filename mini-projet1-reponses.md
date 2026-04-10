@@ -63,9 +63,9 @@ password requisite pam_pwquality.so retry=3
 **4. Expiration du mot de passe (90 jours)**
 ```bash
 sudo nano /etc/login.defs
-# Modifier : PASS_MAX_DAYS 90
+PASS_MAX_DAYS 90
 
-sudo chage -M 90 etudiant
+sudo chage -M 90 clement
 ```
 
 **5. Test**
@@ -75,9 +75,10 @@ passwd etudiant
 # Tester : "M@tDeP@$$3Compl3xe!" → accepté
 ```
 
-> 📸 *[Insérer ici : screenshot des messages d'erreur lors du test de mots de passe faibles]*
+![Texte alternatif](images/mdp1.png)
+![Texte alternatif](images/mdp2.png)
 
-**Pourquoi ?** Un mot de passe complexe résiste aux attaques par force brute et dictionnaire. L'expiration limite la durée d'exposition d'un mot de passe compromis.
+Un mot de passe complexe résiste aux attaques par force brute et dictionnaire. L'expiration limite la durée d'exposition d'un mot de passe compromis.
 
 ---
 
@@ -87,44 +88,38 @@ passwd etudiant
 
 Remplacement de l'authentification par mot de passe par une authentification par clé publique.
 
-**1. Génération de la paire de clés (sur Kali – client)**
+**1. Génération de la paire de clés**
 ```bash
-ssh-keygen -t rsa -b 4096
-# Choisir un emplacement par défaut + définir une passphrase
+ssh-keygen
 ```
+![Texte alternatif](images/keygen.png)
 
 **2. Copie de la clé publique vers le serveur Ubuntu**
-```bash
-ssh-copy-id etudiant@<IP_UBUNTU>
-```
-
-> 📸 *[Insérer ici : screenshot de la commande ssh-copy-id réussie]*
+![Texte alternatif](images/copyID.png)
 
 **3. Test de connexion par clé**
 ```bash
-ssh etudiant@<IP_UBUNTU>
+ssh Clement@<IP_UBUNTU>
 # La passphrase est demandée (pas le mot de passe)
 ```
+
+![Texte alternatif](images/ssh.png)
 
 **4. Désactivation de l'authentification par mot de passe (sur Ubuntu)**
 ```bash
 sudo nano /etc/ssh/sshd_config
-# Modifier : PasswordAuthentication no
+PasswordAuthentication no
 sudo systemctl restart sshd
 ```
 
 **5. Vérification**
 ```bash
-# Connexion par clé → doit fonctionner
-ssh etudiant@<IP_UBUNTU>
-
-# Tentative par mot de passe → doit être refusée
+# Tentative par mot de passe
 ssh -o PreferredAuthentications=password etudiant@<IP_UBUNTU>
 ```
+![Texte alternatif](images/verif.png)
 
-> 📸 *[Insérer ici : screenshot de la connexion refusée par mot de passe]*
-
-**Pourquoi ?** Une clé RSA 4096 bits est mathématiquement infaisable à brute-forcer. La passphrase protège la clé privée si elle est volée.
+Une clé RSA 4096 bits est mathématiquement infaisable à brute-forcer. La passphrase protège la clé privée si elle est volée.
 
 ---
 
@@ -134,18 +129,7 @@ ssh -o PreferredAuthentications=password etudiant@<IP_UBUNTU>
 
 **Wireshark – Capture de trafic ICMP**
 
-```bash
-# Lancer Wireshark (sur VM Analyseur)
-sudo wireshark
-
-# Générer du trafic depuis une autre VM
-ping -c 5 <IP_CIBLE>
-
-# Filtre dans Wireshark
-icmp
-```
-
-> 📸 *[Insérer ici : screenshot Wireshark avec paquets ICMP filtrés et détails d'un paquet]*
+![Texte alternatif](images/wireshark.png)
 
 Informations visibles dans un paquet ICMP : IP source, IP destination, type ICMP (8 = request, 0 = reply), TTL.
 
@@ -153,18 +137,17 @@ Informations visibles dans un paquet ICMP : IP source, IP destination, type ICMP
 
 ```bash
 # Scan SYN (discret)
-nmap -sS <IP_VICTIME>
+nmap -sS 
 
 # Détection des versions de services
-nmap -sV <IP_VICTIME>
+nmap -sV 
 
-# Scan rapide (1000 ports courants)
-nmap --top-ports 100 <IP_VICTIME>
 ```
 
-> 📸 *[Insérer ici : screenshot résultat nmap avec ports ouverts listés]*
+![Texte alternatif](images/sS.png)
+![Texte alternatif](images/sV.png)
 
-**Pourquoi ?** Wireshark permet d'inspecter en détail les échanges réseau (utile pour détecter des anomalies). Nmap est l'outil de référence pour la reconnaissance réseau et l'inventaire des services exposés.
+Wireshark permet d'inspecter en détail les échanges réseau (utile pour détecter des anomalies). Nmap est l'outil de référence pour la reconnaissance réseau et l'inventaire des services exposés.
 
 ---
 
@@ -184,11 +167,11 @@ sudo iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
 
 **3. Test depuis Kali**
 ```bash
-ping <IP_UBUNTU>
+ping -c <IP_UBUNTU>
 # Résultat attendu : Request timeout (aucune réponse)
 ```
 
-> 📸 *[Insérer ici : screenshot du ping sans réponse après la règle DROP]*
+![Texte alternatif](images/ping1.png)
 
 **4. Autoriser SSH (port 22)**
 ```bash
@@ -197,18 +180,18 @@ sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
 
 **5. Test SSH depuis Kali**
 ```bash
-ssh etudiant@<IP_UBUNTU>
+ssh Clement@<IP_UBUNTU>
 # Doit fonctionner malgré le ping bloqué
 ```
 
-> 📸 *[Insérer ici : screenshot connexion SSH réussie + ping toujours bloqué]*
+![Texte alternatif](images/ssh2.png)
 
 **6. Nettoyage des règles**
 ```bash
 # Voir les règles avec numéros
 sudo iptables -L --line-numbers
 
-# Supprimer une règle spécifique (ex: ligne 1)
+# Supprimer une règle spécifique ex: ligne 1
 sudo iptables -D INPUT 1
 
 # Tout réinitialiser
@@ -216,19 +199,6 @@ sudo iptables -F
 sudo iptables -P INPUT ACCEPT
 ```
 
-**Pourquoi ?** Un firewall filtre le trafic de façon sélective : on peut bloquer le ping (qui sert à la reconnaissance réseau) tout en gardant SSH opérationnel. L'ordre des règles est crucial : elles sont évaluées de haut en bas.
+Un firewall filtre le trafic de façon sélective : on peut bloquer le ping qui sert à la reconnaissance réseau tout en gardant SSH opérationnel. L'ordre des règles est crucial : elles sont évaluées de haut en bas.
 
 ---
-
-## Récapitulatif des commandes essentielles
-
-| Partie | Commande clé | Rôle |
-|--------|-------------|------|
-| 1B | `sudo nano /etc/security/pwquality.conf` | Configurer la complexité des mots de passe |
-| 1B | `sudo chage -M 90 etudiant` | Expiration du mot de passe à 90 jours |
-| 1C | `ssh-keygen -t rsa -b 4096` | Générer une paire de clés SSH |
-| 1C | `ssh-copy-id user@ip` | Copier la clé publique vers le serveur |
-| 1D | `nmap -sS <ip>` | Scan de ports TCP SYN |
-| 1D | Filtre Wireshark : `icmp` | Isoler les paquets ICMP |
-| 1E | `sudo iptables -A INPUT -p icmp --icmp-type echo-request -j DROP` | Bloquer le ping |
-| 1E | `sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT` | Autoriser SSH |
